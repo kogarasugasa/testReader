@@ -40,19 +40,16 @@ namespace testReader
         {
             await applePi.InitLCD();
             await applePi.WriteLine("Waiting");
+            await applePi.WriteLine(" ");
         }
 
         private async void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                await applePi.InitLCD();
+                this.ViewModel.StringLine = TextBox1.Text;
                 await applePi.WriteLine(this.ViewModel.StringLine);
                 this.ViewModel.StringLine = String.Empty;
-            }
-            else
-            {
-                this.ViewModel.StringLine += e.Key.ToString();
             }
         }
     }
