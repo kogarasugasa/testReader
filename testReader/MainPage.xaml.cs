@@ -22,9 +22,38 @@ namespace testReader
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        ApplePiLcd applePi = new ApplePiLcd();
+
+        public ViewModelMainPage ViewModel { get; set; }
+
         public MainPage()
         {
+            ViewModel = new ViewModelMainPage();
+            this.ViewModel.StringLine = String.Empty;
             this.InitializeComponent();
+            Loaded += MainPage_Loaded;
+        }
+
+        
+
+        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await applePi.InitLCD();
+            await applePi.WriteLine("Waiting");
+        }
+
+        private async void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                await applePi.InitLCD();
+                await applePi.WriteLine(this.ViewModel.StringLine);
+                this.ViewModel.StringLine = String.Empty;
+            }
+            else
+            {
+                this.ViewModel.StringLine += e.Key.ToString();
+            }
         }
     }
 }
