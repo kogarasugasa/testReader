@@ -59,15 +59,17 @@ namespace testReader
             dig_T1 = 0x88,
             dig_T2 = 0x8a,
             dig_T3 = 0x8c,
+
             dig_P1 = 0x8e,
             dig_P2 = 0x90,
             dig_P3 = 0x92,
-            dig_P4 = 0x92,
-            dig_P5 = 0x94,
-            dig_P6 = 0x96,
-            dig_P7 = 0x98,
-            dig_P8 = 0x9a,
+            dig_P4 = 0x94,
+            dig_P5 = 0x96,
+            dig_P6 = 0x98,
+            dig_P7 = 0x9a,
+            dig_P8 = 0x9c,
             dig_P9 = 0x9e,
+
             dig_H1 = 0xa1,
             dig_H2 = 0xe1,
             dig_H3 = 0xe3,
@@ -110,7 +112,7 @@ namespace testReader
             }
             TempSensor = i2c.GetDevice(new I2cConnectionSettings(TEMP_SENSOR_ADR));
 
-            //LCD初期化
+            //初期化
             uint osrs_t = 3;
             uint osrs_p = 3;
             uint osrs_h = 3;
@@ -148,8 +150,10 @@ namespace testReader
             H1 = ReadByte((byte)Register.dig_H1);
             H2 = (Int16)ReadUint16((byte)Register.dig_H2);
             H3 = ReadByte((byte)Register.dig_H3);
-            H4 = (short)(ReadByte((byte)Register.dig_H4) << 4 | ReadByte((byte)Register.dig_H4 + 1) & 0xf);
-            H5 = (short)(ReadByte((byte)Register.dig_H5 + 1) << 4 | ReadByte((byte)Register.dig_H5) >> 4);
+            H4 = (short)(ReadByte((byte)Register.dig_H4) << 4 | 
+                ReadByte((byte)Register.dig_H4 + 1) & 0xf);
+            H5 = (short)(ReadByte((byte)Register.dig_H5 + 1) << 4 | 
+                ReadByte((byte)Register.dig_H5) >> 4);
             H6 = (sbyte)ReadByte((byte)Register.dig_H6);
 
             periodicTimer = new Timer(this.TimerCallBack, null, 0, 1000);

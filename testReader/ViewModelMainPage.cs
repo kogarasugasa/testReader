@@ -11,6 +11,7 @@ namespace testReader
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private static readonly PropertyChangedEventArgs StringLinePropertyChangedEventArgs = new PropertyChangedEventArgs(nameof(StringLine));
+        private static readonly PropertyChangedEventArgs TempSensorTextPropertyChangedEventArgs = new PropertyChangedEventArgs(nameof(TempSensorText));
 
         private string stringLine;
         public string StringLine
@@ -19,6 +20,16 @@ namespace testReader
             set
             {
                 stringLine = value;
+                this.PropertyChanged?.Invoke(this, StringLinePropertyChangedEventArgs);
+            }
+        }
+        private string tempSensorText;
+        public string TempSensorText
+        {
+            get => tempSensorText;
+            set
+            {
+                tempSensorText = value;
                 this.PropertyChanged?.Invoke(this, StringLinePropertyChangedEventArgs);
             }
         }

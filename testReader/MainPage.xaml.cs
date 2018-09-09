@@ -30,7 +30,8 @@ namespace testReader
         public MainPage()
         {
             this.InitializeComponent();
-            
+            TextBox1.Focus(FocusState.Keyboard);
+
             Loaded += MainPage_Loaded;
 
             ViewModel = new ViewModelMainPage();
@@ -54,9 +55,12 @@ namespace testReader
                 await apLcd.WriteLine(this.ViewModel.StringLine);
                 this.ViewModel.StringLine = String.Empty;
             }
-            SensorTxt.Text = "温度 " + apTemp.TMP.ToString("F1") + "\r\n" +
-                "湿度 " + apTemp.PRE.ToString("F1") + "\r\n" +
-                "気圧 " + apTemp.HUM.ToString("F1");
+
+            System.Text.StringBuilder SensorText = new System.Text.StringBuilder();
+            SensorText.Append("温度 " + apTemp.TMP.ToString("F1") + "\r\n");
+            SensorText.Append("湿度 " + apTemp.HUM.ToString("F1") + "\r\n");
+            SensorText.Append("気圧 " + apTemp.PRE.ToString("F1"));
+            this.ViewModel.TempSensorText = SensorText.ToString();
         }
     }
 }
