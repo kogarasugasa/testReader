@@ -30,15 +30,14 @@ namespace testReader
             set
             {
                 tempSensorText = value;
-                this.PropertyChanged?.Invoke(this, StringLinePropertyChangedEventArgs);
+                this.PropertyChanged?.Invoke(this, TempSensorTextPropertyChangedEventArgs);
             }
         }
 
         public ViewModelMainPage()
         {
-            this.StringLine = String.Empty;
-        }
-
-        
+            stringLine = String.Empty;
+            tempSensorText = String.Empty;
+        }   
     }
 }

@@ -16,10 +16,6 @@ namespace testReader
         private Timer periodicTimer;
         private const byte TEMP_SENSOR_ADR = 0x76;
 
-        public double TMP { get; set; }
-        public double PRE { get; set; }
-        public double HUM { get; set; }
-
         //キャリブレーションデータ用変数
         private UInt16 T1;
         private Int16 T2;
@@ -85,6 +81,10 @@ namespace testReader
             READ_HUM = 0xfd,
         }
 
+        public double TMP { get; set; }
+        public double PRE { get; set; }
+        public double HUM { get; set; }
+
         public ApplePiTemp()
         {
             this.TMP = 0;
@@ -111,7 +111,7 @@ namespace testReader
                 return;
             }
             TempSensor = i2c.GetDevice(new I2cConnectionSettings(TEMP_SENSOR_ADR));
-
+            
             //初期化
             uint osrs_t = 3;
             uint osrs_p = 3;
@@ -128,7 +128,7 @@ namespace testReader
             TempSensor.Write(new byte[] { 0xf2, (byte)ctrlHumReg });
             TempSensor.Write(new byte[] { 0xf4, (byte)ctrlMeasReg });
             TempSensor.Write(new byte[] { 0xf5, (byte)configReg });
-            await Task.Delay(10);
+            await Task.Delay(10).ConfigureAwait(false);
 
             //温度
             T1 = ReadUint16((byte)Register.dig_T1);
@@ -156,17 +156,28 @@ namespace testReader
                 ReadByte((byte)Register.dig_H5) >> 4);
             H6 = (sbyte)ReadByte((byte)Register.dig_H6);
 
-            periodicTimer = new Timer(this.TimerCallBack, null, 0, 1000);
+            periodicTimer = new Timer(TimerCallBack, null, 0, 1000);
+
+            await Task.Delay(50).ConfigureAwait(false);
         }
+
+        //new public string ToString()
+        //{
+        //    System.Text.StringBuilder SensorText = new System.Text.StringBuilder();
+        //    SensorText.Append("温度 " + this.TMP.ToString("F1") + "℃" + "\r\n");
+        //    SensorText.Append("湿度 " + this.HUM.ToString("F1") + "％" + "\r\n");
+        //    SensorText.Append("気圧 " + this.PRE.ToString("F1") + "hPa");
+        //    return SensorText.ToString();
+        //}
 
         private async void TimerCallBack(object state)
         {
-            this.TMP = await readTmpAsync();
-            this.PRE = await readPreAsync();
-            this.HUM = await readHumAsync();
+            this.TMP = await ReadTmpAsync();
+            this.PRE = await ReadPreAsync();
+            this.HUM = await ReadHumAsync();
         }
 
-        private async Task<double> readHumAsync()
+        private async Task<double> ReadHumAsync()
         {
             byte hmsb = ReadByte(HumMsbAddr);
             byte hlsb = ReadByte(HumLsbAddr);
@@ -182,12 +193,17 @@ namespace testReader
             H = (H < 0 ? 0 : H);
             H = (H > 419430400 ? 419430400 : H);
 
-            await Task.Delay(1);
+            await Task.Delay(1).ConfigureAwait(false);
             return (UInt32)((H >> 12) / 1000);
         }
 
-        private async Task<double> readPreAsync()
+        private async Task<double> ReadPreAsync()
         {
+            if(t_fine == Int32.MinValue)
+            {
+                this.TMP = await ReadTmpAsync();
+            }
+
             byte pmsb = ReadByte(PreMsbAddr);
             byte plsb = ReadByte(PreLsbAddr);
             byte pxlsb = ReadByte(PreXlsbAddr);
@@ -211,12 +227,12 @@ namespace testReader
             var1 = ((Int64)P9 * (P >> 13)) >> 25;
             var2 = ((Int64)P8 * P) >> 19;
             P = ((P + var1 + var2) >> 8) + ((Int64)P7 << 4);
-
-            await Task.Delay(1);
+            
+            await Task.Delay(1).ConfigureAwait(false);
             return (double)(P / 256 / 100);
         }
 
-        private async Task<double> readTmpAsync()
+        private async Task<double> ReadTmpAsync()
         {
             byte tmsb = ReadByte(TmpMsbAddr);
             byte tlsb = ReadByte(TmpLsbAddr);
@@ -225,9 +241,10 @@ namespace testReader
 
             double var1, var2, T;
             var1 = ((tmpRaw / 16384.0) - (T1 / 1024.0)) * T2;
-            var2 = ((tmpRaw / 131072.0) - (T1 / 8091.0)) * T3;
+            var2 = ((tmpRaw / 131072.0) - (T1 / 8192.0)) * T3;
+            t_fine = (Int32)(var1 + var2);
             T = (var1 + var2) / 5120.0;
-            await Task.Delay(1);
+            await Task.Delay(1).ConfigureAwait(false);
             return T;
         }
 

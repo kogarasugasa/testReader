@@ -43,9 +43,9 @@ namespace testReader
                 return ;
             }
             LCD = i2c.GetDevice(new I2cConnectionSettings(LCD_ADR));
-
+            
             //LCD初期化
-            await Task.Delay(50);
+            await Task.Delay(50).ConfigureAwait(false);
             await WriteCmd(0x38, 1);
             await WriteCmd(0x39, 1);
             await WriteCmd(0x14, 1);
@@ -111,13 +111,13 @@ namespace testReader
                 LCD.Write(new byte[] { 0x40, bytemsg[i] });
             }
             LCD.Write(new byte[] { 0x40, bytemsg[msg.Length - 1] });
-            await Task.Delay(1);
+            await Task.Delay(1).ConfigureAwait(false);
         }
 
         private async Task WriteCmd(byte cmd, int time)
         {
             LCD.Write(new byte[] { 0, cmd });
-            await Task.Delay(time);
+            await Task.Delay(time).ConfigureAwait(false);
         }
     }
 }

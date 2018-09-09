@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using System.Threading.Tasks;
 
 // 空白ページの項目テンプレートについては、https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x411 を参照してください
 
@@ -30,21 +31,21 @@ namespace testReader
         public MainPage()
         {
             this.InitializeComponent();
-            TextBox1.Focus(FocusState.Keyboard);
+            ViewModel = new ViewModelMainPage();
 
             Loaded += MainPage_Loaded;
 
-            ViewModel = new ViewModelMainPage();
-            this.ViewModel.StringLine = String.Empty;
+            
         }
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await apLcd.InitLCD();
-            await apLcd.WriteLine("Waiting");
-            await apLcd.WriteLine(" ");
+            await InitI2cDevices();
 
-            await apTemp.InitTempSensor();
+            this.ViewModel.StringLine = String.Empty;
+            this.ViewModel.TempSensorText = SensorText();
+
+            TextBox1.Focus(FocusState.Keyboard);
         }
 
         private async void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -56,11 +57,25 @@ namespace testReader
                 this.ViewModel.StringLine = String.Empty;
             }
 
+            this.ViewModel.TempSensorText = SensorText();
+        }
+
+        private async Task InitI2cDevices()
+        {
+            await apLcd.InitLCD();
+            await apLcd.WriteLine("Waiting");
+            await apLcd.WriteLine(" ");
+
+            await apTemp.InitTempSensor();
+        }
+
+        private string SensorText()
+        {
             System.Text.StringBuilder SensorText = new System.Text.StringBuilder();
-            SensorText.Append("温度 " + apTemp.TMP.ToString("F1") + "\r\n");
-            SensorText.Append("湿度 " + apTemp.HUM.ToString("F1") + "\r\n");
-            SensorText.Append("気圧 " + apTemp.PRE.ToString("F1"));
-            this.ViewModel.TempSensorText = SensorText.ToString();
+            SensorText.Append("温度 " + apTemp.TMP.ToString("F1") + "℃" + "\r\n");
+            SensorText.Append("湿度 " + apTemp.HUM.ToString("F1") + "％" + "\r\n");
+            SensorText.Append("気圧 " + apTemp.PRE.ToString("F1") + "hPa");
+            return SensorText.ToString();
         }
     }
 }
