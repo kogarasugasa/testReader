@@ -34,14 +34,14 @@ namespace testReader
             {
                 LowLevelDevicesController.DefaultProvider = LightningProvider.GetAggregateProvider();
             }
-            var i2c = await I2cController.GetDefaultAsync();
 
+            var i2c = await I2cController.GetDefaultAsync();
             if (i2c == null)
             {
                 LCD = null;
-                return;
+                
+                return ;
             }
-
             LCD = i2c.GetDevice(new I2cConnectionSettings(LCD_ADR));
 
             //LCD初期化

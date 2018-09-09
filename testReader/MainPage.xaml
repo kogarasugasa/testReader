@@ -9,6 +9,7 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="1000" Height="700">
         <TextBox x:Name="TextBox1" HorizontalAlignment="Left" Margin="200,200,0,0" Text="{x:Bind ViewModel.StringLine, Mode=TwoWay}" VerticalAlignment="Top" FontSize="20" Width="300" KeyUp="TextBox_KeyUp"/>
+        <TextBlock x:Name="SensorTxt" HorizontalAlignment="Left" Margin="200,342,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Height="80"/>
 
     </Grid>
 </Page>

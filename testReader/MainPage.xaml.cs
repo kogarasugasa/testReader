@@ -22,25 +22,28 @@ namespace testReader
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        ApplePiLcd applePi = new ApplePiLcd();
+        ApplePiLcd apLcd = new ApplePiLcd();
+        ApplePiTemp apTemp = new ApplePiTemp();
 
         public ViewModelMainPage ViewModel { get; set; }
 
         public MainPage()
         {
+            this.InitializeComponent();
+            
+            Loaded += MainPage_Loaded;
+
             ViewModel = new ViewModelMainPage();
             this.ViewModel.StringLine = String.Empty;
-            this.InitializeComponent();
-            Loaded += MainPage_Loaded;
         }
-
-        
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await applePi.InitLCD();
-            await applePi.WriteLine("Waiting");
-            await applePi.WriteLine(" ");
+            await apLcd.InitLCD();
+            await apLcd.WriteLine("Waiting");
+            await apLcd.WriteLine(" ");
+
+            await apTemp.InitTempSensor();
         }
 
         private async void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -48,9 +51,12 @@ namespace testReader
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
                 this.ViewModel.StringLine = TextBox1.Text;
-                await applePi.WriteLine(this.ViewModel.StringLine);
+                await apLcd.WriteLine(this.ViewModel.StringLine);
                 this.ViewModel.StringLine = String.Empty;
             }
+            SensorTxt.Text = "温度 " + apTemp.TMP.ToString("F1") + "\r\n" +
+                "湿度 " + apTemp.PRE.ToString("F1") + "\r\n" +
+                "気圧 " + apTemp.HUM.ToString("F1");
         }
     }
 }
