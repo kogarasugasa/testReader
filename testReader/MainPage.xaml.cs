@@ -34,13 +34,12 @@ namespace testReader
             ViewModel = new ViewModelMainPage();
 
             Loaded += MainPage_Loaded;
-
-            
         }
 
+        //画面初期化処理
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await InitI2cDevices();
+            await InitI2cDevicesAsync();
 
             this.ViewModel.StringLine = String.Empty;
             this.ViewModel.TempSensorText = SensorText();
@@ -48,25 +47,44 @@ namespace testReader
             TextBox1.Focus(FocusState.Keyboard);
         }
 
+        //テキストボックスイベント
         private async void TextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                this.ViewModel.StringLine = TextBox1.Text;
-                await apLcd.WriteLine(this.ViewModel.StringLine);
-                this.ViewModel.StringLine = String.Empty;
+                await DispTextBoxToLcdAsync();
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Escape)
+            {
+                await DipsSensorToLcdAsync();
             }
 
             this.ViewModel.TempSensorText = SensorText();
         }
 
-        private async Task InitI2cDevices()
+        //サブ処理
+        private async Task DipsSensorToLcdAsync()
         {
-            await apLcd.InitLCD();
-            await apLcd.WriteLine("Waiting");
-            await apLcd.WriteLine(" ");
+            this.ViewModel.TempSensorText = SensorText();
+            await apLcd.WriteLineAsync(apTemp.TMP.ToString("F0") + "C" + " " +
+                apTemp.HUM.ToString("F0") + "%");
+            await apLcd.WriteLineAsync(apTemp.PRE.ToString("F0") + "hPa");
+        }
 
-            await apTemp.InitTempSensor();
+        private async Task DispTextBoxToLcdAsync()
+        {
+            this.ViewModel.StringLine = TextBox1.Text;
+            await apLcd.WriteLineAsync(this.ViewModel.StringLine);
+            this.ViewModel.StringLine = String.Empty;
+        }
+
+        private async Task InitI2cDevicesAsync()
+        {
+            await apLcd.InitLcdAsync();
+            await apLcd.WriteLineAsync("Waiting");
+            await apLcd.WriteLineAsync(" ");
+            await apTemp.InitTempSensorAsync();
         }
 
         private string SensorText()

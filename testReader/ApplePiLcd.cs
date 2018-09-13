@@ -28,7 +28,7 @@ namespace testReader
             LCD.Dispose();
         }
 
-        public async Task InitLCD()
+        public async Task InitLcdAsync()
         {
             if (LightningProvider.IsLightningEnabled)
             {
@@ -46,18 +46,18 @@ namespace testReader
             
             //LCD初期化
             await Task.Delay(50).ConfigureAwait(false);
-            await WriteCmd(0x38, 1);
-            await WriteCmd(0x39, 1);
-            await WriteCmd(0x14, 1);
-            await WriteCmd(0x71, 1);
-            await WriteCmd(0x56, 1);
-            await WriteCmd(0x6c, 250);
-            await WriteCmd(0x38, 1);
-            await WriteCmd(0x0c, 1);
-            await WriteCmd(0x01, 200);
+            await WriteCmdAsync(0x38, 1);
+            await WriteCmdAsync(0x39, 1);
+            await WriteCmdAsync(0x14, 1);
+            await WriteCmdAsync(0x71, 1);
+            await WriteCmdAsync(0x56, 1);
+            await WriteCmdAsync(0x6c, 250);
+            await WriteCmdAsync(0x38, 1);
+            await WriteCmdAsync(0x0c, 1);
+            await WriteCmdAsync(0x01, 200);
         }
 
-        public async Task WriteLine(string msg)
+        public async Task WriteLineAsync(string msg)
         {
             int MaxLineLength = 8;
             int MaxLine = DispLines.Count;
@@ -80,29 +80,29 @@ namespace testReader
             TextLines.Add(msg);
 
             //文字を表示
-            await WriteCmd(0x01, 100);
+            await WriteCmdAsync(0x01, 100);
             for (int i = TextLines.Count - 1; i >= 0; i--)
             {
-                await WriteCmd(DispLines[i], 1);
-                await WriteDisp(TextLines[i]);
+                await WriteCmdAsync(DispLines[i], 1);
+                await WriteDispAsync(TextLines[i]);
             }
         }
 
-        private async Task DispLCD()
+        private async Task DispLCDAsync()
         {
             //LCDクリア
-            await WriteCmd(0x01, 100);
+            await WriteCmdAsync(0x01, 100);
 
             //1行目
-            await WriteCmd(0x80, 1);
-            await WriteDisp("RPi3");
+            await WriteCmdAsync(0x80, 1);
+            await WriteDispAsync("RPi3");
 
             //2行目
-            await WriteCmd(0xc0, 1);
-            await WriteDisp("ApplePi");
+            await WriteCmdAsync(0xc0, 1);
+            await WriteDispAsync("ApplePi");
         }
 
-        private async Task WriteDisp(string msg)
+        private async Task WriteDispAsync(string msg)
         {
             byte[] bytemsg = Encoding.ASCII.GetBytes(msg);
 
@@ -114,7 +114,7 @@ namespace testReader
             await Task.Delay(1).ConfigureAwait(false);
         }
 
-        private async Task WriteCmd(byte cmd, int time)
+        private async Task WriteCmdAsync(byte cmd, int time)
         {
             LCD.Write(new byte[] { 0, cmd });
             await Task.Delay(time).ConfigureAwait(false);

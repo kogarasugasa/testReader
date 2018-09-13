@@ -98,7 +98,7 @@ namespace testReader
             periodicTimer.Dispose();
         }
 
-        public async Task InitTempSensor()
+        public async Task InitTempSensorAsync()
         {
             if (LightningProvider.IsLightningEnabled)
             {
@@ -161,14 +161,14 @@ namespace testReader
             await Task.Delay(50).ConfigureAwait(false);
         }
 
-        //new public string ToString()
-        //{
-        //    System.Text.StringBuilder SensorText = new System.Text.StringBuilder();
-        //    SensorText.Append("温度 " + this.TMP.ToString("F1") + "℃" + "\r\n");
-        //    SensorText.Append("湿度 " + this.HUM.ToString("F1") + "％" + "\r\n");
-        //    SensorText.Append("気圧 " + this.PRE.ToString("F1") + "hPa");
-        //    return SensorText.ToString();
-        //}
+        new public string ToString()
+        {
+            StringBuilder SensorText = new StringBuilder();
+            SensorText.Append("温度 " + this.TMP.ToString("F1") + "℃" + "\r\n");
+            SensorText.Append("湿度 " + this.HUM.ToString("F1") + "％" + "\r\n");
+            SensorText.Append("気圧 " + this.PRE.ToString("F1") + "hPa");
+            return SensorText.ToString();
+        }
 
         private async void TimerCallBack(object state)
         {
