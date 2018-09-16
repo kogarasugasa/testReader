@@ -26,6 +26,15 @@ namespace testReader
         ApplePiLcd apLcd = new ApplePiLcd();
         ApplePiTemp apTemp = new ApplePiTemp();
 
+        private readonly string AzureDeviceId = "Rasp01;";
+        private readonly string AzureSharedAccessKey = "9gbtY1yoTNxNME3RwxighF3u8xqc5j/Tcd49EW7saNc=";
+        private readonly string AzureDeviceType = "RaspberryPi";
+        MyastiaAzure.AzureIotDevice azureIot;
+
+        DispatcherTimer azureSendTimer;
+        DispatcherTimer updateDispTimer;
+        DispatcherTimer errSensorTimer;
+
         public ViewModelMainPage ViewModel { get; set; }
 
         public MainPage()
@@ -36,13 +45,17 @@ namespace testReader
             Loaded += MainPage_Loaded;
         }
 
-        //画面初期化処理
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             await InitI2cDevicesAsync();
+            azureIot = new MyastiaAzure.AzureIotDevice(AzureDeviceId, AzureSharedAccessKey, AzureDeviceType);
+            azureIot.StartReceiveMessage();
+            RunTimer();
 
+            //画面初期化処理
             this.ViewModel.StringLine = String.Empty;
-            this.ViewModel.TempSensorText = SensorText();
+            this.ViewModel.TempSensorText = GetSensorValueText();
+            this.ViewModel.ErrorMessage = "エラー無し";
 
             TextBox1.Focus(FocusState.Keyboard);
         }
@@ -59,14 +72,48 @@ namespace testReader
             {
                 await DipsSensorToLcdAsync();
             }
-
-            this.ViewModel.TempSensorText = SensorText();
         }
 
-        //サブ処理
+        private void RunTimer()
+        {
+            //Azureへセンサーのデータを送るタイマー
+            azureSendTimer = new DispatcherTimer();
+            azureSendTimer.Interval = new TimeSpan(0, 1, 0);
+            async void azureSendHandler(object s, object e)
+            {
+                await azureIot.SendMessage(apTemp.TMP.ToString(), "温度");
+            }
+            azureSendTimer.Tick += azureSendHandler;
+            azureSendTimer.Start();
+
+            //画面を更新するタイマー
+            updateDispTimer = new DispatcherTimer();
+            updateDispTimer.Interval = new TimeSpan(0, 0, 1);
+            void updateDispHandler(object s, object e)
+            {
+                this.ViewModel.ReceivedMessage = azureIot.ReceivedMessage;
+                this.ViewModel.TempSensorText = GetSensorValueText();
+            }
+            updateDispTimer.Tick += updateDispHandler;
+            updateDispTimer.Start();
+
+            //エラーを表示するタイマー
+            errSensorTimer = new DispatcherTimer();
+            errSensorTimer.Interval = new TimeSpan(0, 0, 5);
+            void errSensorHandler(object s, object e)
+            {
+                if(azureIot.Error.Count != 0)
+                {
+                    this.ViewModel.ErrorMessage = azureIot.Error[0];
+                }
+            }
+            errSensorTimer.Tick += errSensorHandler;
+            errSensorTimer.Start();
+        }
+
         private async Task DipsSensorToLcdAsync()
         {
-            this.ViewModel.TempSensorText = SensorText();
+            this.ViewModel.TempSensorText = GetSensorValueText();
             await apLcd.WriteLineAsync(apTemp.TMP.ToString("F0") + "C" + " " +
                 apTemp.HUM.ToString("F0") + "%");
             await apLcd.WriteLineAsync(apTemp.PRE.ToString("F0") + "hPa");
@@ -87,7 +134,7 @@ namespace testReader
             await apTemp.InitTempSensorAsync();
         }
 
-        private string SensorText()
+        private string GetSensorValueText()
         {
             System.Text.StringBuilder SensorText = new System.Text.StringBuilder();
             SensorText.Append("温度 " + apTemp.TMP.ToString("F1") + "℃" + "\r\n");

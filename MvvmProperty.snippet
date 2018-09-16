@@ -1,0 +1,27 @@
+﻿<CodeSnippet Format="1.0.0">
+  <Header>
+    <Title>mvvmproperty</Title>
+    <Shortcut>mvvmproperty</Shortcut>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>name</ID>
+        <Default>myProperty</Default>
+      </Literal>
+    </Declarations>
+    <Code Language="CSharp">
+      private static readonly PropertyChangedEventArgs $name$PropertyChangedEventArgs = new PropertyChangedEventArgs(nameof($name$));
+      private string _$name$;
+      public string $name$
+      {
+      get => _$name$;
+      set
+      {
+      _$name$ = value;
+      this.PropertyChanged?.Invoke(this, $name$PropertyChangedEventArgs);
+      }
+      }
+    </Code>
+  </Snippet>
+</CodeSnippet>
