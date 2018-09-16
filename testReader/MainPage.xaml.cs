@@ -1,18 +1,19 @@
-﻿using System;
+﻿//using System.Linq;
+//using System.Runtime.InteropServices.WindowsRuntime;
+//using Windows.Foundation;
+//using Windows.Foundation.Collections;
+//using Windows.UI.Xaml.Controls.Primitives;
+//using Windows.UI.Xaml.Data;
+//using Windows.UI.Xaml.Media;
+//using Windows.UI.Xaml.Navigation;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using System.Threading.Tasks;
+using Windows.Storage;
 
 // 空白ページの項目テンプレートについては、https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x411 を参照してください
 
@@ -100,11 +101,14 @@ namespace testReader
             //エラーを表示するタイマー
             errSensorTimer = new DispatcherTimer();
             errSensorTimer.Interval = new TimeSpan(0, 0, 5);
-            void errSensorHandler(object s, object e)
+            async void errSensorHandler(object s, object e)
             {
                 if(azureIot.Error.Count != 0)
                 {
                     this.ViewModel.ErrorMessage = azureIot.Error[0];
+                    List<string> ErrTextList = new List<string>(azureIot.Error);
+                    ErrTextList.Insert(0, string.Format("********{0}********", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
+                    await WriteLogAsync(ErrTextList);
                 }
             }
             errSensorTimer.Tick += errSensorHandler;
@@ -141,6 +145,14 @@ namespace testReader
             SensorText.Append("湿度 " + apTemp.HUM.ToString("F1") + "％" + "\r\n");
             SensorText.Append("気圧 " + apTemp.PRE.ToString("F1") + "hPa");
             return SensorText.ToString();
+        }
+
+        private async Task WriteLogAsync(List<string> LogTextLines)
+        {
+            string logFileName = string.Format("{0}_{1}.txt", new string[] { "SensorLog", DateTime.Today.ToString("yyyyMMdd")});
+            StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+            StorageFile logFile = await storageFolder.CreateFileAsync(logFileName,CreationCollisionOption.OpenIfExists);
+            await FileIO.WriteLinesAsync(logFile, LogTextLines);
         }
     }
 }
